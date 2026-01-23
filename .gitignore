@@ -1,0 +1,15 @@
+# Logs
+ping_log_*.txt
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+ENV/
+env/
+
+# OS
+.DS_Store
