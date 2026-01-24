@@ -33,7 +33,7 @@ class PacketLossMonitor:
             'latencies': []
         })
 
-        self.log_filename = f"ping_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}.txt"
+        self.log_filename = f"ping_log_{datetime.now().strftime('%Y%m%d_%H%M%S')}_{self.target.replace('.', '_')}.txt"
         self.log_file = None
 
     def calculate_loss_percentage(self):
@@ -183,7 +183,9 @@ class PacketLossMonitor:
                 self.log_file.close()
 
 if __name__ == "__main__":
-    monitor = PacketLossMonitor()
+    target = sys.argv[1] if len(sys.argv) > 1 else "8.8.8.8"
+    monitor = PacketLossMonitor(target=target)
     print(f"Starting packet loss monitor... (Press Ctrl+C to stop)")
+    print(f"Target: {target}")
     print(f"Logging to: {monitor.log_filename}\n")
     monitor.run()
