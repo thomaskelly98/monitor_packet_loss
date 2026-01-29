@@ -25,6 +25,7 @@ class PacketLossMonitor:
         self.window_latencies = []  # Latencies for current 100-packet window
         self.min_latency = None
         self.max_latency = None
+        self.max_window_loss_pct = 0.0  # Worst packet loss in any 100-packet window
 
         # Hourly statistics tracking
         self.hourly_stats = defaultdict(lambda: {
@@ -50,6 +51,7 @@ class PacketLossMonitor:
         summary += f"Total packets sent: {self.packets_sent}\n"
         summary += f"Total packets received: {self.packets_received}\n"
         summary += f"Packet loss: {loss_pct:.2f}%\n"
+        summary += f"Max packet loss (In any 100 packet window): {self.max_window_loss_pct:.2f}%\n"
         summary += f"\nLatency statistics:\n"
         summary += f"  Average: {avg_latency:.2f} ms\n"
         summary += f"  Minimum: {self.min_latency:.2f} ms\n" if self.min_latency is not None else "  Minimum: N/A\n"
@@ -160,6 +162,8 @@ class PacketLossMonitor:
                 if self.packets_sent > 0 and self.packets_sent % 100 == 0:
                     window_loss_pct = ((self.window_sent - self.window_received) / self.window_sent) * 100 if self.window_sent > 0 else 0
                     window_lost = self.window_sent - self.window_received
+                    if window_loss_pct > self.max_window_loss_pct:
+                        self.max_window_loss_pct = window_loss_pct
                     window_avg_latency = sum(self.window_latencies) / len(self.window_latencies) if self.window_latencies else 0
                     window_jitter = statistics.stdev(self.window_latencies) if len(self.window_latencies) > 1 else 0
 
