@@ -26,6 +26,7 @@ class PacketLossMonitor:
         self.min_latency = None
         self.max_latency = None
         self.max_window_loss_pct = 0.0  # Worst packet loss in any 100-packet window
+        self.start_time = None  # Track when monitoring started
 
         # Hourly statistics tracking
         self.hourly_stats = defaultdict(lambda: {
@@ -47,7 +48,10 @@ class PacketLossMonitor:
         avg_latency = sum(self.latencies) / len(self.latencies) if self.latencies else 0
         jitter = statistics.stdev(self.latencies) if len(self.latencies) > 1 else 0
 
-        summary = f"\n{'='*60}\nOVERALL SUMMARY\n{'='*60}\n"
+        end_time = datetime.now()
+        start_str = self.start_time.strftime('%Y-%m-%d %H:%M:%S') if self.start_time else "N/A"
+        end_str = end_time.strftime('%Y-%m-%d %H:%M:%S')
+        summary = f"\n{'='*60}\nOVERALL SUMMARY {start_str} to {end_str}\n{'='*60}\n"
         summary += f"Total packets sent: {self.packets_sent}\n"
         summary += f"Total packets received: {self.packets_received}\n"
         summary += f"Packet loss: {loss_pct:.2f}%\n"
@@ -98,11 +102,14 @@ class PacketLossMonitor:
 
         signal.signal(signal.SIGINT, signal_handler)
 
+        # Record start time
+        self.start_time = datetime.now()
+
         # Open log file
         self.log_file = open(self.log_filename, 'w')
 
         # Log header
-        header = f"Packet Loss Monitor - Started {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}"
+        header = f"Packet Loss Monitor - Started {self.start_time.strftime('%Y-%m-%d %H:%M:%S')}"
         self.log(f"{'='*60}")
         self.log(header)
         self.log(f"Target: {self.target}")
